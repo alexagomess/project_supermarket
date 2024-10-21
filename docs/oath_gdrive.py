@@ -5,7 +5,6 @@ from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
 
 # Definir o escopo de permissões
-# SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
 SCOPES = ['https://www.googleapis.com/auth/drive']  # Permissão total ao Google Drive
 
 
