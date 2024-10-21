@@ -1,17 +1,16 @@
-from autentication import authenticate
+from docs.oath_gdrive import authenticate
+from googleapiclient.discovery import build
+from io import BytesIO
+import pandas as pd
 
-# Autenticar e obter as credenciais
-creds, service = authenticate()
+def read_gdrive(folder_id, file_name):
+    # Autenticar e obter as credenciais e o serviço
+    creds, service = authenticate()
 
-folder_project = '1PI3lv0xhsQMkV3WWBEIEDMqBrfH5r4YH'
-folder_raw = '1k6Kz-Q2Uy4iAGlM_XrSpVgDE4SRDwSju'
-folder_cleaned = '1zZkHkdPQynXeZH_T_nnVhHfTqktuZB-X'
-
-# Lista os arquivos na pasta específica
-def read_gdrive(service, folder_id):
+    # Lista os arquivos na pasta específica
     results = service.files().list(
-        q=f"'{folder_id}' in parents",
-        pageSize=10,
+        q=f"'{folder_id}' in parents and name='{file_name}' and mimeType='text/csv'",  # Filtra pelo nome do arquivo .csv na pasta especificada
+        pageSize=1,  # Queremos apenas um arquivo
         fields="nextPageToken, files(id, name)"
     ).execute()
 
@@ -19,14 +18,17 @@ def read_gdrive(service, folder_id):
 
     if not items:
         print('Nenhum arquivo encontrado.')
+        return None
     else:
-        print('Arquivos:')
-        for item in items:
-            print(f"{item['name']} ({item['id']})")
-    
-    return
+        # Obtém o ID do arquivo encontrado
+        file_id = items[0]['id']
+        print(f"Arquivo encontrado: {items[0]['name']} ({file_id})")
 
+        # Faz o download do arquivo CSV
+        request = service.files().get_media(fileId=file_id)
+        file_data = request.execute()  # Executa o download
 
-# Exemplo de uso
-folder_project = '1PI3lv0xhsQMkV3WWBEIEDMqBrfH5r4YH'
-read_gdrive(service, folder_raw)
+        # Cria um DataFrame a partir dos bytes do arquivo CSV
+        df = pd.read_csv(BytesIO(file_data))  # Lê o CSV em um DataFrame
+
+        return df  # Retorna o DataFrame
