@@ -1,9 +1,10 @@
-from turtle import up
 import pandas as pd
+import unidecode  # Importa a biblioteca para remover acentos e cedilhas
+from turtle import up
 from datetime import datetime
 from docs.gdrive_read import read_gdrive
 from docs.write_dataframe import write_df_to_gdrive
-import unidecode  # Importa a biblioteca para remover acentos e cedilhas
+from config import FOLDER_RAW, FOLDER_CLEANED
 
 def clean_currency(value):
     if isinstance(value, str):  # Verifica se o valor é uma string
@@ -12,8 +13,8 @@ def clean_currency(value):
     return value
 
 def main():
-    folder_raw = '1k6Kz-Q2Uy4iAGlM_XrSpVgDE4SRDwSju'  # Pasta onde os arquivos são lidos
-    folder_cleaned = '1zZkHkdPQynXeZH_T_nnVhHfTqktuZB-X'  # Pasta onde os arquivos são salvos
+    folder_raw = FOLDER_RAW  # Pasta onde os arquivos são lidos
+    folder_cleaned = FOLDER_CLEANED  # Pasta onde os arquivos são salvos
 
     # Lê todos os arquivos da pasta raw
     raw_files = read_gdrive(folder_raw)

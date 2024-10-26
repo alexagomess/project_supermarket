@@ -3,10 +3,11 @@ import pandas as pd
 from datetime import datetime
 from docs.gdrive_read import read_gdrive
 from docs.write_dataframe import write_df_to_gdrive
+from config import FOLDER_RAW, FOLDER_CLEANED
 
 def main():
-    folder_raw = '1k6Kz-Q2Uy4iAGlM_XrSpVgDE4SRDwSju'  # Pasta onde os arquivos são lidos
-    folder_cleaned = '1zZkHkdPQynXeZH_T_nnVhHfTqktuZB-X'  # Pasta onde os arquivos são salvos
+    folder_raw = FOLDER_RAW  # Pasta onde os arquivos são lidos
+    folder_cleaned = FOLDER_CLEANED  # Pasta onde os arquivos são salvos
 
     # Lê todos os arquivos da pasta raw
     raw_files = read_gdrive(folder_raw)
@@ -27,9 +28,9 @@ def main():
 
             if emission_date is not None:
                 # Converte a data de referência para datetime
-                emission_date = datetime.strptime(emission_date, "%d/%m/%Y %H:%M:%S")
-                reference_date = emission_date.strftime('%Y-%m-%d')
-                reference_hour = emission_date.strftime('%H:%M:%S')
+                reference_date = datetime.strptime(emission_date, "%d/%m/%Y %H:%M:%S")
+                # reference_date = emission_date.strftime('%Y-%m-%d')
+                # reference_hour = emission_date.strftime('%H:%M:%S')
 
                 # Realiza o processamento dos dados
                 arquivo.replace(r'["“”]', '', regex=True, inplace=True)
@@ -61,7 +62,6 @@ def main():
                     'unidade': unidade,
                     'valor unitario': valor_unitario,
                     'reference_date': reference_date,
-                    'reference_hour': reference_hour,
                     'created_at': created_at,
                     'updated_at': updated_at
                 }
