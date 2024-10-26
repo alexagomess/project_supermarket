@@ -6,11 +6,15 @@ from docs.gdrive_read import read_gdrive
 from docs.write_dataframe import write_df_to_gdrive
 from config import FOLDER_RAW, FOLDER_CLEANED
 
+
 def clean_currency(value):
     if isinstance(value, str):  # Verifica se o valor é uma string
-        value = value.replace('R$', '').replace('.', '').replace(',', '.').strip()  # Remove R$, milhar e troca vírgula por ponto
+        value = (
+            value.replace("R$", "").replace(".", "").replace(",", ".").strip()
+        )  # Remove R$, milhar e troca vírgula por ponto
         return float(value)  # Converte para float
     return value
+
 
 def main():
     folder_raw = FOLDER_RAW  # Pasta onde os arquivos são lidos
@@ -18,7 +22,7 @@ def main():
 
     # Lê todos os arquivos da pasta raw
     raw_files = read_gdrive(folder_raw)
-    shopping_files = [file for file in raw_files if file.endswith('-shopping.csv')]
+    shopping_files = [file for file in raw_files if file.endswith("-shopping.csv")]
 
     for shopping_file in shopping_files:
         # Lê o arquivo da pasta raw
@@ -35,13 +39,17 @@ def main():
                     data_dict[row.iloc[0]] = row.iloc[1]
 
             # Cria um DataFrame a partir do dicionário
-            df_info = pd.DataFrame(list(data_dict.items()), columns=['Titulo', 'Informacao'])
+            df_info = pd.DataFrame(
+                list(data_dict.items()), columns=["Titulo", "Informacao"]
+            )
 
             # Pivotar a tabela
-            df_pivoted = df_info.set_index('Titulo').T
+            df_pivoted = df_info.set_index("Titulo").T
 
             # Renomear colunas: minúsculas e sem acentos
-            df_pivoted.columns = [unidecode.unidecode(str(col)).lower() for col in df_pivoted.columns]
+            df_pivoted.columns = [
+                unidecode.unidecode(str(col)).lower() for col in df_pivoted.columns
+            ]
 
             # Verifica se as colunas necessárias estão presentes e processa
             for col in ["valor total do servico", "base de calculo icms", "valor icms"]:
@@ -49,17 +57,19 @@ def main():
                     print(f"Processando a coluna: {col}")
                     df_pivoted[col] = df_pivoted[col].apply(clean_currency)
                 else:
-                    print(f"Erro: A coluna '{col}' não foi encontrada no arquivo {shopping_file}.")
+                    print(
+                        f"Erro: A coluna '{col}' não foi encontrada no arquivo {shopping_file}."
+                    )
                     continue
 
             # Remove colunas com todos os valores como NaN
-            df_pivoted.dropna(axis=1, how='all', inplace=True)
+            df_pivoted.dropna(axis=1, how="all", inplace=True)
 
             # Remove linhas com todos os valores NaN
-            df_pivoted.dropna(axis=0, how='all', inplace=True)
+            df_pivoted.dropna(axis=0, how="all", inplace=True)
 
             # Cria o novo nome do arquivo
-            new_file_name = shopping_file.replace('-shopping.csv', '-nfe_info.csv')
+            new_file_name = shopping_file.replace("-shopping.csv", "-nfe_info.csv")
 
             # Salva o DataFrame na pasta cleaned com o novo nome do arquivo
             print(f"Salvando o arquivo processado: {new_file_name}")
@@ -67,6 +77,7 @@ def main():
         else:
             print(f"Erro: O arquivo {shopping_file} está vazio ou não foi encontrado.")
             continue
+
 
 if __name__ == "__main__":
     main()
