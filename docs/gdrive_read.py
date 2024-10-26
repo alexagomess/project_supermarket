@@ -3,6 +3,7 @@ from googleapiclient.discovery import build
 from io import BytesIO
 import pandas as pd
 
+
 def read_gdrive(folder_id, file_name=None):
     # Autenticar e obter as credenciais e o serviço
     creds, service = authenticate()
@@ -12,20 +13,19 @@ def read_gdrive(folder_id, file_name=None):
     if file_name:
         query += f" and name='{file_name}' and mimeType='text/csv'"  # Filtra pelo nome do arquivo .csv na pasta especificada
 
-    results = service.files().list(
-        q=query,
-        fields="nextPageToken, files(id, name)"
-    ).execute()
+    results = (
+        service.files().list(q=query, fields="nextPageToken, files(id, name)").execute()
+    )
 
-    items = results.get('files', [])
+    items = results.get("files", [])
 
     if not items:
-        print('Nenhum arquivo encontrado.')
+        print("Nenhum arquivo encontrado.")
         return None
     else:
         # Se um nome de arquivo específico foi fornecido, retorna o DataFrame
         if file_name:
-            file_id = items[0]['id']
+            file_id = items[0]["id"]
             print(f"Arquivo encontrado: {items[0]['name']} ({file_id})")
 
             # Faz o download do arquivo CSV
@@ -38,4 +38,6 @@ def read_gdrive(folder_id, file_name=None):
             return df  # Retorna o DataFrame
 
         # Se não foi fornecido um nome de arquivo, retorna a lista de arquivos
-        return [item['name'] for item in items]  # Retorna uma lista de nomes de arquivos
+        return [
+            item["name"] for item in items
+        ]  # Retorna uma lista de nomes de arquivos
