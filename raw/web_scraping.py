@@ -3,6 +3,7 @@ import pandas as pd
 from bs4 import BeautifulSoup
 from datetime import datetime
 from docs.write_dataframe import write_df_to_gdrive
+from config import FOLDER_RAW
 
 # Definir cabeçalho de requisição e chave da NFe
 headers = {
@@ -76,16 +77,16 @@ if not df_products.empty and not df_info_nfe.empty:
         # Criando o nome do arquivo
         file_name = f"{formatted_date}-shopping.csv"
         
-        write_df_to_gdrive(df_combined, file_name, '1k6Kz-Q2Uy4iAGlM_XrSpVgDE4SRDwSju')
+        write_df_to_gdrive(df_combined, file_name, FOLDER_RAW)
         print(f"Dados combinados salvos no Google Drive como '{file_name}'.")
 
 # Salvando ambos os DataFrames no Google Drive
 if not df_products.empty:
-    write_df_to_gdrive(df_products, f"{formatted_date}_products.csv", '1k6Kz-Q2Uy4iAGlM_XrSpVgDE4SRDwSju')
+    write_df_to_gdrive(df_products, f"{formatted_date}_products.csv", FOLDER_RAW)
     print("Dados dos produtos salvos no Google Drive.")
 
 if not df_info_nfe.empty:
-    write_df_to_gdrive(df_info_nfe, f"{formatted_date}_info_nfe.csv", '1k6Kz-Q2Uy4iAGlM_XrSpVgDE4SRDwSju')
+    write_df_to_gdrive(df_info_nfe, f"{formatted_date}_info_nfe.csv", FOLDER_RAW)
     print("Dados das informações da nota salvos no Google Drive.")
 
 # Exibindo os DataFrames
