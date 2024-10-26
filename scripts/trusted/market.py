@@ -1,8 +1,8 @@
 import pandas as pd
 import os
 from datetime import datetime
-from docs.gdrive_read import read_gdrive
-from docs.write_dataframe import write_df_to_gdrive
+from scripts.docs.gdrive_read import read_gdrive
+from scripts.docs.write_dataframe import write_df_to_gdrive
 from dotenv import load_dotenv
 from config import FOLDER_CLEANED, FOLDER_TRUSTED_MARKET
 

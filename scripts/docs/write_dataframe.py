@@ -1,5 +1,5 @@
 from googleapiclient.http import MediaIoBaseUpload
-from docs.oath_gdrive import authenticate
+from scripts.docs.oath_gdrive import authenticate
 import pandas as pd
 import io
 
