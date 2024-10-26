@@ -2,7 +2,7 @@ import requests
 import pandas as pd
 from bs4 import BeautifulSoup
 from datetime import datetime
-from docs.write_dataframe import write_df_to_gdrive
+from scripts.docs.write_dataframe import write_df_to_gdrive
 from config import FOLDER_RAW
 
 # Definir cabeçalho de requisição e chave da NFe
