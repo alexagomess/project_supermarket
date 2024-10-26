@@ -1,4 +1,4 @@
-from docs.oath_gdrive import authenticate
+from scripts.docs.oath_gdrive import authenticate
 from googleapiclient.discovery import build
 from io import BytesIO
 import pandas as pd

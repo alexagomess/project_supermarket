@@ -1,6 +1,6 @@
 import pandas as pd
-from docs.gdrive_read import read_gdrive
-from docs.write_dataframe import write_df_to_gdrive
+from scripts.docs.gdrive_read import read_gdrive
+from scripts.docs.write_dataframe import write_df_to_gdrive
 from config import FOLDER_CLEANED, FOLDER_TRUSTED_NFE_INFORMATION
 
 
