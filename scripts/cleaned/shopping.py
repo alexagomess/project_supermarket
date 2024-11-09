@@ -3,12 +3,13 @@ import pandas as pd
 from datetime import datetime
 from scripts.docs.gdrive_read import read_gdrive
 from scripts.docs.write_dataframe import write_df_to_gdrive
-from config import FOLDER_RAW, FOLDER_CLEANED
+from config import FOLDER_RAW, FOLDER_CLEANED_SHOPPING
+from scripts.common.logging import Logger
 
 
 def main():
     folder_raw = FOLDER_RAW  # Pasta onde os arquivos são lidos
-    folder_cleaned = FOLDER_CLEANED  # Pasta onde os arquivos são salvos
+    folder_cleaned = FOLDER_CLEANED_SHOPPING  # Pasta onde os arquivos são salvos
 
     # Lê todos os arquivos da pasta raw
     raw_files = read_gdrive(folder_raw)
@@ -41,7 +42,7 @@ def main():
 
                 # Verifica se a divisão gerou pelo menos 2 colunas
                 if split_columns.shape[1] < 2:
-                    print(
+                    Logger.error(
                         f"Erro: A divisão da coluna não gerou duas partes para o arquivo {shopping_file}."
                     )
                     continue
@@ -99,10 +100,10 @@ def main():
                 # Salva o DataFrame na pasta cleaned com o mesmo nome do arquivo raw
                 write_df_to_gdrive(df, shopping_file, folder_cleaned)
             else:
-                print(f"O arquivo {shopping_file} não contém a data de emissão.")
+                Logger.error(f"O arquivo {shopping_file} não contém a data de emissão.")
                 continue
         else:
-            print(f"O arquivo {shopping_file} está vazio ou não foi encontrado.")
+            Logger.error(f"O arquivo {shopping_file} está vazio ou não foi encontrado.")
             continue
 
 

@@ -2,6 +2,7 @@ from scripts.docs.oath_gdrive import authenticate
 from googleapiclient.discovery import build
 from io import BytesIO
 import pandas as pd
+from scripts.common.logging import Logger
 
 
 def read_gdrive(folder_id, file_name=None):
@@ -20,13 +21,13 @@ def read_gdrive(folder_id, file_name=None):
     items = results.get("files", [])
 
     if not items:
-        print("Nenhum arquivo encontrado.")
+        Logger.error("Nenhum arquivo encontrado.")
         return None
     else:
         # Se um nome de arquivo específico foi fornecido, retorna o DataFrame
         if file_name:
             file_id = items[0]["id"]
-            print(f"Arquivo encontrado: {items[0]['name']} ({file_id})")
+            Logger.info(f"Arquivo encontrado: {items[0]['name']} ({file_id})")
 
             # Faz o download do arquivo CSV
             request = service.files().get_media(fileId=file_id)

@@ -3,6 +3,7 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
+from scripts.common.logging import Logger
 
 # Definir o escopo de permissões
 SCOPES = ["https://www.googleapis.com/auth/drive"]  # Permissão total ao Google Drive
@@ -41,14 +42,14 @@ def authenticate():
                 token.write(creds.to_json())
 
     except Exception as e:
-        print(f"Erro na autenticação: {e}")
+        Logger.error(f"Erro na autenticação: {e}")
         return None, None
 
     # Cria o serviço do Google Drive
     try:
         service = build("drive", "v3", credentials=creds)
     except Exception as e:
-        print(f"Erro ao criar o serviço do Google Drive: {e}")
+        Logger.error(f"Erro ao criar o serviço do Google Drive: {e}")
         return creds, None
 
     return creds, service  # Retorna as credenciais e o serviço
