@@ -1,10 +1,9 @@
 import pandas as pd
-import unidecode  # Importa a biblioteca para remover acentos e cedilhas
-from turtle import up
-from datetime import datetime
+import unidecode
 from scripts.docs.gdrive_read import read_gdrive
 from scripts.docs.write_dataframe import write_df_to_gdrive
-from config import FOLDER_RAW, FOLDER_CLEANED
+from config import FOLDER_RAW, FOLDER_CLEANED_NFE_INFORMATION
+from scripts.common.logging import Logger
 
 
 def clean_currency(value):
@@ -18,7 +17,7 @@ def clean_currency(value):
 
 def main():
     folder_raw = FOLDER_RAW  # Pasta onde os arquivos são lidos
-    folder_cleaned = FOLDER_CLEANED  # Pasta onde os arquivos são salvos
+    folder_cleaned = FOLDER_CLEANED_NFE_INFORMATION  # Pasta onde os arquivos são salvos
 
     # Lê todos os arquivos da pasta raw
     raw_files = read_gdrive(folder_raw)
@@ -26,7 +25,7 @@ def main():
 
     for shopping_file in shopping_files:
         # Lê o arquivo da pasta raw
-        print(f"Lendo o arquivo: {shopping_file}")
+        Logger.info(f"Lendo o arquivo: {shopping_file}")
         arquivo = read_gdrive(folder_raw, shopping_file)
 
         # Inspeciona o DataFrame
@@ -54,10 +53,10 @@ def main():
             # Verifica se as colunas necessárias estão presentes e processa
             for col in ["valor total do servico", "base de calculo icms", "valor icms"]:
                 if col in df_pivoted.columns:
-                    print(f"Processando a coluna: {col}")
+                    Logger.info(f"Processando a coluna: {col}")
                     df_pivoted[col] = df_pivoted[col].apply(clean_currency)
                 else:
-                    print(
+                    Logger.error(
                         f"Erro: A coluna '{col}' não foi encontrada no arquivo {shopping_file}."
                     )
                     continue
@@ -72,10 +71,12 @@ def main():
             new_file_name = shopping_file.replace("-shopping.csv", "-nfe_info.csv")
 
             # Salva o DataFrame na pasta cleaned com o novo nome do arquivo
-            print(f"Salvando o arquivo processado: {new_file_name}")
+            Logger.info(f"Salvando o arquivo processado: {new_file_name}")
             write_df_to_gdrive(df_pivoted, new_file_name, folder_cleaned)
         else:
-            print(f"Erro: O arquivo {shopping_file} está vazio ou não foi encontrado.")
+            Logger.error(
+                f"Erro: O arquivo {shopping_file} está vazio ou não foi encontrado."
+            )
             continue
 
 

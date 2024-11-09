@@ -4,16 +4,26 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 from scripts.docs.write_dataframe import write_df_to_gdrive
 from config import FOLDER_RAW
+from scripts.common.logging import Logger
 
-# Definir cabeçalho de requisição e chave da NFe
 headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36"
 }
-nfe_key = "31241004737552002262651090001641671801665264"
+
+while True:
+    nfe_key = input(str("Digite o código da NFe de 44 números: "))
+    if len(nfe_key) != 44:
+        print("\nCódigo da NFe inválido. Digite novamente.\n")
+    else:
+        print(f"\nO código digitado foi: {nfe_key}\n")
+        break
+
 url_base = "https://portalsped.fazenda.mg.gov.br/portalnfce/sistema/qrcode.xhtml?p="
 url_final = (
     f"{url_base}{nfe_key}%7C2%7C1%7C1%7C8B75E1F34CEEB8DE8D620838EBB3E1E845379697"
 )
+Logger.info(f"URL final: {url_final}")
+
 today = datetime.today().strftime("%Y_%m_%d")
 
 # Fazendo a requisição para a página
@@ -35,7 +45,7 @@ def extract_products(soup):
         df_products = pd.DataFrame(table_data)
         return df_products
     else:
-        print("Tabela de produtos não encontrada.")
+        Logger.error("Tabela de produtos não encontrada.")
         return pd.DataFrame()  # Retorna DataFrame vazio se não encontrar a tabela
 
 
@@ -87,16 +97,16 @@ if not df_products.empty and not df_info_nfe.empty:
         file_name = f"{formatted_date}-shopping.csv"
 
         write_df_to_gdrive(df_combined, file_name, FOLDER_RAW)
-        print(f"Dados combinados salvos no Google Drive como '{file_name}'.")
+        Logger.info(f"Dados combinados salvos no Google Drive como '{file_name}'.")
 
 # Salvando ambos os DataFrames no Google Drive
 if not df_products.empty:
     write_df_to_gdrive(df_products, f"{formatted_date}_products.csv", FOLDER_RAW)
-    print("Dados dos produtos salvos no Google Drive.")
+    Logger.info("Dados dos produtos salvos no Google Drive.")
 
 if not df_info_nfe.empty:
     write_df_to_gdrive(df_info_nfe, f"{formatted_date}_info_nfe.csv", FOLDER_RAW)
-    print("Dados das informações da nota salvos no Google Drive.")
+    Logger.info("Dados das informações da nota salvos no Google Drive.")
 
 # Exibindo os DataFrames
 print("Dados dos produtos:")
