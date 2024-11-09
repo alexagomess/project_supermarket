@@ -2,6 +2,7 @@ from googleapiclient.http import MediaIoBaseUpload
 from scripts.docs.oath_gdrive import authenticate
 import pandas as pd
 import io
+from scripts.common.logging import Logger
 
 
 def write_df_to_gdrive(df, file_name, folder_id):
@@ -26,7 +27,7 @@ def write_df_to_gdrive(df, file_name, folder_id):
         file_id = items[0]["id"]
         media = MediaIoBaseUpload(buffer, mimetype="text/csv", resumable=True)
         service.files().update(fileId=file_id, media_body=media).execute()
-        print(f"Arquivo atualizado com ID: {file_id}")
+        Logger.info(f"Arquivo atualizado com ID: {file_id}")
     else:
         # Se o arquivo não existe, cria um novo
         media = MediaIoBaseUpload(buffer, mimetype="text/csv", resumable=True)
@@ -35,4 +36,4 @@ def write_df_to_gdrive(df, file_name, folder_id):
             .create(body=file_metadata, media_body=media, fields="id")
             .execute()
         )
-        print(f'Arquivo salvo com ID: {file.get("id")}')
+        Logger.info(f'Arquivo salvo com ID: {file.get("id")}')
