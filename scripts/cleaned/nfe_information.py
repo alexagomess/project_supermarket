@@ -1,7 +1,6 @@
 import pandas as pd
 import unidecode
-from scripts.docs.gdrive_read import read_gdrive
-from scripts.docs.write_dataframe import write_df_to_gdrive
+from scripts.common.etl import load_google_drive, read_google_drive
 from config import FOLDER_RAW, FOLDER_CLEANED_NFE_INFORMATION
 from scripts.common.logging import Logger
 
@@ -20,13 +19,13 @@ def main():
     folder_cleaned = FOLDER_CLEANED_NFE_INFORMATION  # Pasta onde os arquivos são salvos
 
     # Lê todos os arquivos da pasta raw
-    raw_files = read_gdrive(folder_raw)
+    raw_files = read_google_drive(folder_raw)
     shopping_files = [file for file in raw_files if file.endswith("-shopping.csv")]
 
     for shopping_file in shopping_files:
         # Lê o arquivo da pasta raw
         Logger.info(f"Lendo o arquivo: {shopping_file}")
-        arquivo = read_gdrive(folder_raw, shopping_file)
+        arquivo = read_google_drive(folder_raw, shopping_file)
 
         # Inspeciona o DataFrame
         if arquivo is not None and not arquivo.empty:
@@ -72,7 +71,7 @@ def main():
 
             # Salva o DataFrame na pasta cleaned com o novo nome do arquivo
             Logger.info(f"Salvando o arquivo processado: {new_file_name}")
-            write_df_to_gdrive(df_pivoted, new_file_name, folder_cleaned)
+            load_google_drive(df_pivoted, new_file_name, folder_cleaned)
         else:
             Logger.error(
                 f"Erro: O arquivo {shopping_file} está vazio ou não foi encontrado."
