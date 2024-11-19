@@ -1,7 +1,6 @@
 import pandas as pd
 from datetime import datetime
-from scripts.docs.gdrive_read import read_gdrive
-from scripts.docs.write_dataframe import write_df_to_gdrive
+from scripts.common.etl import read_google_drive, load_google_drive
 from config import (
     FOLDER_CLEANED_SHOPPING,
     FOLDER_TRUSTED_SHOPPING,
@@ -15,14 +14,6 @@ from config import (
 from scripts.common.logging import Logger
 
 
-def execute():
-    save_shopping()
-    save_products()
-    save_nfe_info()
-    save_market()
-    return
-
-
 def save_shopping():
     print("\n")
     Logger.info("Salvando arquivos de shopping...")
@@ -30,10 +21,10 @@ def save_shopping():
     folder_trusted = FOLDER_TRUSTED_SHOPPING
 
     # Lê o arquivo de shopping da pasta cleaned
-    cleaned_files = read_gdrive(folder_cleaned)
+    cleaned_files = read_google_drive(folder_cleaned)
     for cleaned_file in cleaned_files:
         if cleaned_file.endswith("-shopping.csv"):
-            df_shopping = read_gdrive(folder_cleaned, cleaned_file)
+            df_shopping = read_google_drive(folder_cleaned, cleaned_file)
 
             # Obtém a data de emissão para o nome do arquivo
             if not df_shopping.empty:
@@ -43,7 +34,7 @@ def save_shopping():
                 )
                 file_name = f"{formatted_date}_shopping.csv"
 
-                write_df_to_gdrive(df_shopping, file_name, folder_trusted)
+                load_google_drive(df_shopping, file_name, folder_trusted)
                 Logger.info(f"Arquivo '{file_name}' salvo com sucesso.")
     return
 
@@ -55,10 +46,10 @@ def save_products():
     folder_trusted = FOLDER_TRUSTED_PRODUCTS
 
     # Lê o arquivo de shopping da pasta cleaned
-    cleaned_files = read_gdrive(folder_cleaned)
+    cleaned_files = read_google_drive(folder_cleaned)
     for cleaned_file in cleaned_files:
         if cleaned_file.endswith("-shopping.csv"):
-            df_shopping = read_gdrive(folder_cleaned, cleaned_file)
+            df_shopping = read_google_drive(folder_cleaned, cleaned_file)
 
             # Cria tabela de produtos
             if not df_shopping.empty:
@@ -76,7 +67,7 @@ def save_products():
 
                 # Salva o arquivo de produtos na camada trusted
                 if not df_produtos.empty:
-                    write_df_to_gdrive(df_produtos, file_name, folder_trusted)
+                    load_google_drive(df_produtos, file_name, folder_trusted)
                     Logger.info(f"Arquivo '{file_name}' salvo com sucesso.")
     return
 
@@ -88,10 +79,10 @@ def save_nfe_info():
     folder_trusted = FOLDER_TRUSTED_NFE_INFORMATION  # Pasta onde os arquivos da camada trusted serão salvos
 
     # Lê o arquivo de nfe_info da pasta cleaned
-    cleaned_files = read_gdrive(folder_cleaned)
+    cleaned_files = read_google_drive(folder_cleaned)
     for cleaned_file in cleaned_files:
         if cleaned_file.endswith("-nfe_info.csv"):
-            df_nfe_info = read_gdrive(folder_cleaned, cleaned_file)
+            df_nfe_info = read_google_drive(folder_cleaned, cleaned_file)
 
             # Obtém a data de emissão para o nome do arquivo
             if not df_nfe_info.empty:
@@ -101,7 +92,7 @@ def save_nfe_info():
                 )
                 file_name = f"{formatted_date}_nfe_info.csv"
 
-                write_df_to_gdrive(df_nfe_info, file_name, folder_trusted)
+                load_google_drive(df_nfe_info, file_name, folder_trusted)
                 Logger.info(f"Arquivo '{file_name}' salvo com sucesso.")
     return
 
@@ -113,10 +104,10 @@ def save_market():
     folder_trusted = FOLDER_TRUSTED_MARKET
 
     # Lê o arquivo de nfe_info da pasta cleaned
-    cleaned_files = read_gdrive(folder_cleaned)
+    cleaned_files = read_google_drive(folder_cleaned)
     for cleaned_file in cleaned_files:
         if cleaned_file.endswith("-nfe_info.csv"):
-            df_nfe_info = read_gdrive(folder_cleaned, cleaned_file)
+            df_nfe_info = read_google_drive(folder_cleaned, cleaned_file)
 
             # Cria tabela de mercado
             if not df_nfe_info.empty:
@@ -141,9 +132,18 @@ def save_market():
 
                 # Salva o arquivo de mercado na camada trusted
                 if not df_mercado.empty:
-                    write_df_to_gdrive(df_mercado, file_name, folder_trusted)
+                    load_google_drive(df_mercado, file_name, folder_trusted)
                     Logger.info(f"Arquivo '{file_name}' salvo com sucesso.")
     return
+
+
+def execute():
+    save_shopping()
+    save_products()
+    save_nfe_info()
+    save_market()
+    return
+
 
 if __name__ == "__main__":
     execute()
