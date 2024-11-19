@@ -1,8 +1,6 @@
-from turtle import up
 import pandas as pd
 from datetime import datetime
-from scripts.docs.gdrive_read import read_gdrive
-from scripts.docs.write_dataframe import write_df_to_gdrive
+from scripts.common.etl import load_google_drive, read_google_drive
 from config import FOLDER_RAW, FOLDER_CLEANED_SHOPPING
 from scripts.common.logging import Logger
 
@@ -12,13 +10,13 @@ def main():
     folder_cleaned = FOLDER_CLEANED_SHOPPING  # Pasta onde os arquivos são salvos
 
     # Lê todos os arquivos da pasta raw
-    raw_files = read_gdrive(folder_raw)
+    raw_files = read_google_drive(folder_raw)
 
     shopping_files = [file for file in raw_files if file.endswith("-shopping.csv")]
 
     for shopping_file in shopping_files:
         # Lê o arquivo da pasta raw
-        arquivo = read_gdrive(folder_raw, shopping_file)
+        arquivo = read_google_drive(folder_raw, shopping_file)
 
         # Inspeciona o DataFrame
         if arquivo is not None and not arquivo.empty:
@@ -98,7 +96,7 @@ def main():
                 df = pd.DataFrame(data_dict)
 
                 # Salva o DataFrame na pasta cleaned com o mesmo nome do arquivo raw
-                write_df_to_gdrive(df, shopping_file, folder_cleaned)
+                load_google_drive(df, shopping_file, folder_cleaned)
             else:
                 Logger.error(f"O arquivo {shopping_file} não contém a data de emissão.")
                 continue
