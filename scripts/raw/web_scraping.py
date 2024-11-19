@@ -2,7 +2,9 @@ import requests
 import pandas as pd
 from bs4 import BeautifulSoup
 from datetime import datetime
-from scripts.docs.write_dataframe import write_df_to_gdrive
+
+# from scripts.docs.write_dataframe import write_df_to_gdrive
+from scripts.common.etl import load_google_drive
 from config import FOLDER_RAW
 from scripts.common.logging import Logger
 
@@ -70,16 +72,41 @@ def extract_nfe_info(soup):
         return pd.DataFrame()  # Retorna DataFrame vazio se não encontrar a div
 
 
+def extract_key_access(soup):
+    # Procurando a div com id="collapseTwo"
+    collapse_div = soup.find("div", id="collapseTwo")
+    data_dict = {}
+
+    if collapse_div:
+        # Localiza a tabela dentro da div
+        table = collapse_div.find("table")
+        if table:
+            # Busca o conteúdo da célula (td) que contém a chave de acesso
+            key_cell = table.find("td")
+            if key_cell:
+                # Adiciona a chave de acesso ao dicionário
+                data_dict["Chave de Acesso"] = key_cell.get_text(strip=True)
+
+        # Transformando o dicionário em um DataFrame com formato de linha
+        df_info_nfe = pd.DataFrame(list(data_dict.items()), columns=["Título", "Valor"])
+        return df_info_nfe
+    else:
+        print("Div com id='collapseTwo' não encontrada.")
+        return pd.DataFrame()
+
+
 # Extraindo os DataFrames
 df_products = extract_products(soup)
 df_info_nfe = extract_nfe_info(soup)
+df_key_access = extract_key_access(soup)
 
 # Unificar ambos os DataFrames em um único DataFrame, se necessário
 df_combined = pd.DataFrame()
 
 if not df_products.empty and not df_info_nfe.empty:
     # Unindo os DataFrames horizontalmente
-    df_combined = pd.concat([df_info_nfe, df_products], axis=1)
+    df_nfe_key = pd.concat([df_info_nfe, df_key_access], axis=0, ignore_index=True)
+    df_combined = pd.concat([df_nfe_key, df_products], axis=1)
 
     # Extraindo a data da coluna "Data Emissão"
     if "Data Emissão" in df_info_nfe["Título"].values:
@@ -96,22 +123,28 @@ if not df_products.empty and not df_info_nfe.empty:
         # Criando o nome do arquivo
         file_name = f"{formatted_date}-shopping.csv"
 
-        write_df_to_gdrive(df_combined, file_name, FOLDER_RAW)
+        load_google_drive(df_combined, file_name, FOLDER_RAW)
         Logger.info(f"Dados combinados salvos no Google Drive como '{file_name}'.")
 
 # Salvando ambos os DataFrames no Google Drive
 if not df_products.empty:
-    write_df_to_gdrive(df_products, f"{formatted_date}_products.csv", FOLDER_RAW)
+    load_google_drive(df_products, f"{formatted_date}_products.csv", FOLDER_RAW)
     Logger.info("Dados dos produtos salvos no Google Drive.")
 
 if not df_info_nfe.empty:
-    write_df_to_gdrive(df_info_nfe, f"{formatted_date}_info_nfe.csv", FOLDER_RAW)
+    load_google_drive(df_info_nfe, f"{formatted_date}_info_nfe.csv", FOLDER_RAW)
     Logger.info("Dados das informações da nota salvos no Google Drive.")
 
+if not df_key_access.empty:
+    load_google_drive(df_key_access, f"{formatted_date}_key_access.csv", FOLDER_RAW)
+    Logger.info("Dados da chave de acesso salvos no Google Drive.")
+
 # Exibindo os DataFrames
-print("Dados dos produtos:")
-print(df_products)
-print("\nDados das informações da nota:")
-print(df_info_nfe)
-print("\nDados combinados:")
-print(df_combined)
+Logger.info("Dados dos produtos:")
+Logger.info(df_products)
+Logger.info("\nDados das informações da nota:")
+Logger.info(df_info_nfe)
+Logger.info("\nDados da chave de acesso:")
+Logger.info(df_key_access)
+Logger.info("\nDados combinados:")
+Logger.info(df_combined)
