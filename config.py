@@ -1,10 +1,8 @@
 from dotenv import load_dotenv
 import os
 
-# Carrega as variáveis de ambiente do arquivo .env
 load_dotenv()
 
-# Inicializa as variáveis de ambiente
 FOLDER_RAW = os.getenv("FOLDER_RAW")
 FOLDER_CLEANED = os.getenv("FOLDER_CLEANED")
 FOLDER_CLEANED_SHOPPING = os.getenv("FOLDER_CLEANED_SHOPPING")
