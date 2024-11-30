@@ -6,39 +6,33 @@ from scripts.common.logging import Logger
 
 
 def main():
-    folder_raw = FOLDER_RAW  # Pasta onde os arquivos são lidos
-    folder_cleaned = FOLDER_CLEANED_SHOPPING  # Pasta onde os arquivos são salvos
+    folder_raw = FOLDER_RAW
+    folder_cleaned = FOLDER_CLEANED_SHOPPING
 
-    # Lê todos os arquivos da pasta raw
     raw_files = read_google_drive(folder_raw)
 
     shopping_files = [file for file in raw_files if file.endswith("-shopping.csv")]
 
     for shopping_file in shopping_files:
-        # Lê o arquivo da pasta raw
         arquivo = read_google_drive(folder_raw, shopping_file)
 
-        # Inspeciona o DataFrame
         if arquivo is not None and not arquivo.empty:
-            emission_date = None
+            emission_date: str = None
+            key_nfe: str = None
             for index, row in arquivo.iterrows():
+                row = row.astype(str)
                 if "Data Emissão" in row.iloc[0]:
                     emission_date = row.iloc[1]
-                    break
+                elif "Chave de Acesso" in row.iloc[0]:
+                    key_nfe = row.iloc[1]
 
             if emission_date is not None:
-                # Converte a data de referência para datetime
                 reference_date = datetime.strptime(emission_date, "%d/%m/%Y %H:%M:%S")
-                # reference_date = emission_date.strftime('%Y-%m-%d')
-                # reference_hour = emission_date.strftime('%H:%M:%S')
 
-                # Realiza o processamento dos dados
                 arquivo.replace(r'["“”]', "", regex=True, inplace=True)
 
-                # Divide a terceira coluna em 'Descrição' e 'Código'
                 split_columns = arquivo.iloc[:, 2].str.split(r"\(Código:", expand=True)
 
-                # Verifica se a divisão gerou pelo menos 2 colunas
                 if split_columns.shape[1] < 2:
                     Logger.error(
                         f"Erro: A divisão da coluna não gerou duas partes para o arquivo {shopping_file}."
@@ -52,11 +46,8 @@ def main():
                     .str.strip()
                     .str.upper()
                 )
-                código = (
-                    split_columns[1].str.strip(")").astype(str)
-                )  # Mantém como string
+                código = split_columns[1].str.strip(")").astype(str)
 
-                # Acessa as outras colunas
                 quantidade = (
                     arquivo.iloc[:, 3]
                     .str.strip()
@@ -81,8 +72,8 @@ def main():
                 created_at = datetime.now()
                 updated_at = datetime.now()
 
-                # Cria um dicionário para o DataFrame
                 data_dict = {
+                    "chave_de_acesso": key_nfe,
                     "descricao": descricao,
                     "codigo": código,
                     "quantidade": quantidade,
@@ -94,8 +85,23 @@ def main():
                 }
 
                 df = pd.DataFrame(data_dict)
+                df = df.dropna(
+                    subset=[
+                        "chave_de_acesso",
+                        "descricao",
+                        "codigo",
+                        "quantidade",
+                        "unidade",
+                        "valor unitario",
+                    ],
+                    how="any",
+                )
+                if df.empty:
+                    Logger.info(
+                        "DataFrame está vazio após remoção de linhas nulas. Nenhum arquivo será enviado."
+                    )
+                    return
 
-                # Salva o DataFrame na pasta cleaned com o mesmo nome do arquivo raw
                 load_google_drive(df, shopping_file, folder_cleaned)
             else:
                 Logger.error(f"O arquivo {shopping_file} não contém a data de emissão.")
