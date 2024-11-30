@@ -4,10 +4,10 @@ from sqlalchemy import create_engine, text
 from config import FOLDER_CLEANED_NFE_INFORMATION
 from scripts.common.logging import Logger
 from config import DATABASE_URI
-from scripts.common.etl import read_google_drive
+from scripts.common.etl import read_google_drive, preprocess_dates
 
 
-class TrustedMarket:
+class TrustedNFEInformation:
     def __init__(self):
         self.engine = create_engine(DATABASE_URI)
         self.logger = Logger()
@@ -102,6 +102,9 @@ class TrustedMarket:
         Returns:
             None
         """
+        date_columns = ["data_emissao", "created_at", "updated_at"]
+        df = preprocess_dates(df, date_columns)
+
         if "cnpj" in df.columns and df["cnpj"].duplicated().any():
             self.logger.info("Existem cnpj duplicados no DataFrame!")
             duplicates = df[df["cnpj"].duplicated(keep=False)]
@@ -172,4 +175,4 @@ class TrustedMarket:
 
 
 if __name__ == "__main__":
-    TrustedMarket().execute()
+    TrustedNFEInformation().execute()
