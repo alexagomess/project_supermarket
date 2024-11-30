@@ -73,7 +73,7 @@ class TrustedShopping:
                     row["updated_at"] = pd.Timestamp(datetime.now())
                     query = text(
                         f"""
-                        INSERT INTO supermarket.{self.table_name} (uid, "index", codigo, descricao, reference_date, quantidade, unidade, valor_unitario, created_at, updated_at)
+                        INSERT INTO supermarket.{self.table_name} (uid, "index", codigo, descricao, reference_date, quantidade, unidade, valor_unitario, chave_de_acesso, created_at, updated_at)
                         VALUES (
                             :uid,
                             :index,
@@ -83,6 +83,7 @@ class TrustedShopping:
                             :quantidade,
                             :unidade,
                             :valor_unitario,
+                            :chave_de_acesso,
                             :created_at,
                             :updated_at
                         )
@@ -106,6 +107,7 @@ class TrustedShopping:
                         "quantidade": row["quantidade"],
                         "unidade": row["unidade"],
                         "valor_unitario": row["valor_unitario"],
+                        "chave_de_acesso": row["chave_de_acesso"],
                         "created_at": row["created_at"],
                         "updated_at": row["updated_at"],
                     }
