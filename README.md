@@ -13,6 +13,7 @@ The next steps of the project include the implementation of Apache Airflow to or
 
 ```
 project_supermarket/
+<<<<<<< HEAD
 ├── cleaned/
 │ ├── __init__.py
 │ ├── products.py
@@ -32,6 +33,33 @@ project_supermarket/
 │ └── (files generated in the trusted layer)
 ├── .env
 └── requirements.txt
+=======
+├── scripts/
+│ ├── cleaned/
+│ │ ├── __init__.py
+│ │ ├── products.py
+│ │ ├── shopping.py
+│ │ └── nfe_info.py
+│ ├── docs/
+│ │ ├── __init__.py
+│ │ ├── authentication.py
+│ │ ├── gdrive_read.py
+│ │ ├── gdrive_write.py
+│ │ └── write_dataframe.py
+│ ├── raw/
+│ │ ├── __init__.py
+│ │ ├── web_scrapping_products.py
+│ │ └── web_scrapping_table_nfe.py
+│ ├── trusted/
+│ │ ├── __init__.py
+│ │ ├── market.py
+│ │ ├── nfe_information.py
+│ │ ├── products.py
+│ │ ├── shopping.py
+├── .env
+├── requirements.txt
+├── config.py
+>>>>>>> main
 ```
 
 ## Prerequisites
@@ -67,7 +95,7 @@ Click "Create" and download the client_secrets.json file.
 ##### 1. Place the client_secrets.json file in the root of your project.
 ##### 2. Run the following script to generate the token.json file, which will be used for future authentications:
 ```bash
-from docs.authentication import authenticate_gdrive
+from scripts.docs.authentication import authenticate_gdrive
 authenticate_gdrive() # This script will perform the authentication and generate the token.json
 ```
 
@@ -77,11 +105,14 @@ Create a .env file in the root of your project with the following variables:
 ```bash
 FOLDER_RAW=Folder ID
 FOLDER_CLEANED=Folder ID
+FOLDER_CLEANED_SHOPPING=Folder ID
+FOLDER_CLEANED_NFE_INFORMATION=Folder ID
 FOLDER_TRUSTED=Folder ID
 FOLDER_TRUSTED_SHOPPING=Folder ID
 FOLDER_TRUSTED_NFE_INFORMATION=Folder ID
 FOLDER_TRUSTED_PRODUCTS=Folder ID
 FOLDER_TRUSTED_MARKET=Folder ID
+DATABASE_URI=URL do banco de dados
 ```
 
 ### Running the Project
@@ -122,25 +153,31 @@ Os próximos passos do projeto incluem a implementação do Apache Airflow para 
 
 ```
 project_supermarket/
-├── cleaned/
-│   ├── __init__.py
-│   ├── products.py
-│   ├── shopping.py
-│   └── nfe_info.py
-├── docs/
-│   ├── __init__.py
-│   ├── autentication.py
-│   ├── gdrive_read.py
-│   ├── gdrive_write.py
-│   └── write_dataframe.py
-├── raw/
-│   ├── __init__.py
-│   ├── web_scrapping_products.py
-│   └── web_scrapping_table_nfe.py
-├── trusted/
-│   └── (arquivos gerados na camada trusted)
+├── scripts/
+│ ├── cleaned/
+│ │ ├── __init__.py
+│ │ ├── products.py
+│ │ ├── shopping.py
+│ │ └── nfe_info.py
+│ ├── docs/
+│ │ ├── __init__.py
+│ │ ├── authentication.py
+│ │ ├── gdrive_read.py
+│ │ ├── gdrive_write.py
+│ │ └── write_dataframe.py
+│ ├── raw/
+│ │ ├── __init__.py
+│ │ ├── web_scrapping_products.py
+│ │ └── web_scrapping_table_nfe.py
+│ ├── trusted/
+│ │ ├── __init__.py
+│ │ ├── market.py
+│ │ ├── nfe_information.py
+│ │ ├── products.py
+│ │ ├── shopping.py
 ├── .env
-└── requirements.txt
+├── requirements.txt
+├── config.py
 ```
 
 
@@ -177,7 +214,7 @@ Clique em "Criar" e baixe o arquivo client_secrets.json.
 ##### 1. Coloque o arquivo client_secrets.json na raiz do seu projeto.
 ##### 2. Execute o seguinte script para gerar o arquivo token.json, que será usado para autenticações futuras:
 ```bash
-from docs.autentication import authenticate_gdrive
+from scripts.docs.autentication import authenticate_gdrive
 authenticate_gdrive()  # Este script fará a autenticação e gerará o token.json
 ```
 
@@ -187,6 +224,8 @@ Crie um arquivo .env na raiz do seu projeto com as seguintes variáveis:
 ```bash
 FOLDER_RAW=ID da folder
 FOLDER_CLEANED=ID da folder
+FOLDER_CLEANED_SHOPPING=Folder ID
+FOLDER_CLEANED_NFE_INFORMATION=Folder ID
 FOLDER_TRUSTED=ID da folder
 FOLDER_TRUSTED_SHOPPING=ID da folder
 FOLDER_TRUSTED_NFE_INFORMATION=ID da folder
