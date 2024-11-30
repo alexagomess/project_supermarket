@@ -163,3 +163,9 @@ wrapt==1.16.0
 WTForms==3.2.1
 yarl==1.17.2
 zipp==3.21.0
+Werkzeug==3.0.6
+wirerope==0.4.8
+wrapt==1.16.0
+WTForms==3.2.1
+yarl==1.17.2
+zipp==3.21.0

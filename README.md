@@ -13,27 +13,6 @@ The next steps of the project include the implementation of Apache Airflow to or
 
 ```
 project_supermarket/
-<<<<<<< HEAD
-├── cleaned/
-│ ├── __init__.py
-│ ├── products.py
-│ ├── shopping.py
-│ └── nfe_info.py
-├── docs/
-│ ├── __init__.py
-│ ├── authentication.py
-│ ├── gdrive_read.py
-│ ├── gdrive_write.py
-│ └── write_dataframe.py
-├── raw/
-│ ├── __init__.py
-│ ├── web_scrapping_products.py
-│ └── web_scrapping_table_nfe.py
-├── trusted/
-│ └── (files generated in the trusted layer)
-├── .env
-└── requirements.txt
-=======
 ├── scripts/
 │ ├── cleaned/
 │ │ ├── __init__.py
@@ -59,7 +38,6 @@ project_supermarket/
 ├── .env
 ├── requirements.txt
 ├── config.py
->>>>>>> main
 ```
 
 ## Prerequisites
