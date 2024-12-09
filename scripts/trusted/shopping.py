@@ -46,7 +46,7 @@ class TrustedShopping:
     def transform(self, df: pd.DataFrame):
         df.columns = df.columns.str.lower().str.replace(" ", "_").str.replace("-", "_")
         df["index"] = df.index
-        df = create_hash(df, ["index", "codigo", "descricao", "reference_date"])
+        df = create_hash(df, ["index", "codigo", "descricao", "reference_date", "chave_de_acesso"])
         df["created_at"] = pd.to_datetime("now")
         df["updated_at"] = pd.to_datetime("now")
         return df
