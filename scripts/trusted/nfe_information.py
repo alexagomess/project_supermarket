@@ -105,9 +105,9 @@ class TrustedNFEInformation:
         date_columns = ["data_emissao", "created_at", "updated_at"]
         df = preprocess_dates(df, date_columns)
 
-        if "cnpj" in df.columns and df["cnpj"].duplicated().any():
-            self.logger.info("Existem cnpj duplicados no DataFrame!")
-            duplicates = df[df["cnpj"].duplicated(keep=False)]
+        if "chave_de_acesso" in df.columns and df["chave_de_acesso"].duplicated().any():
+            self.logger.info("Existem chave_de_acesso duplicados no DataFrame!")
+            duplicates = df[df["chave_de_acesso"].duplicated(keep=False)]
             self.logger.info(duplicates)
         else:
             self.logger.info("Nenhuma duplicidade no DataFrame.")
@@ -140,7 +140,7 @@ class TrustedNFEInformation:
                             :created_at,
                             :updated_at
                         )
-                        ON CONFLICT (cnpj)
+                        ON CONFLICT (chave_de_acesso)
                         DO UPDATE SET
                             updated_at = EXCLUDED.updated_at;
                     """
@@ -169,7 +169,7 @@ class TrustedNFEInformation:
 
                     result = connection.execute(query, params)
                     self.logger.info(
-                        f"Inserção realizada para o CNPJ: {row['cnpj']}, result: {result.rowcount} linhas afetadas"
+                        f"Inserção realizada para chave_de_acesso: {row['chave_de_acesso']}, result: {result.rowcount} linhas afetadas"
                     )
             self.logger.info(f"Registros inseridos com sucesso.")
 

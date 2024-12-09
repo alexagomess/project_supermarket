@@ -51,6 +51,10 @@ class TrustedProducts:
         )
         df = df.drop_duplicates()
         df = create_hash(df, ["codigo", "descricao"])
+        df["descricao_completa"] = None
+        df["marca"] = None
+        df["categoria"] = None
+        df["sub_categoria"] = None
         df["ean"] = None
         df["created_at"] = pd.to_datetime("now")
         df["updated_at"] = pd.to_datetime("now")
@@ -78,11 +82,15 @@ class TrustedProducts:
                     row["updated_at"] = pd.Timestamp(datetime.now())
                     query = text(
                         f"""
-                        INSERT INTO supermarket.{self.table_name} (uid, codigo, descricao, ean, created_at, updated_at)
+                        INSERT INTO supermarket.{self.table_name} (uid, codigo, descricao, descricao_completa, marca, categoria, sub_categoria, ean, created_at, updated_at)
                         VALUES (
                             :uid,
                             :codigo,
                             :descricao,
+                            :descricao_completa,
+                            :marca,
+                            :categoria,
+                            :sub_categoria,
                             :ean,
                             :created_at,
                             :updated_at
@@ -98,6 +106,10 @@ class TrustedProducts:
                         "uid": row["uid"],
                         "codigo": row["codigo"],
                         "descricao": row["descricao"],
+                        "descricao_completa": row["descricao_completa"],
+                        "marca": row["marca"],
+                        "categoria": row["categoria"],
+                        "sub_categoria": row["sub_categoria"],
                         "ean": row["ean"],
                         "created_at": row["created_at"],
                         "updated_at": row["updated_at"],
