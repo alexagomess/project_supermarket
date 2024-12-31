@@ -1,0 +1,60 @@
+Table market {
+  nome text
+  cnpj text [pk]
+  inscricao_estadual text
+  uf text
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table nfe_information {
+  nome text
+  cnpj text
+  inscricao_estadual text
+  uf text
+  destino_da_operacao text
+  consumidor_final text
+  presenca_do_comprador text
+  modelo text
+  serie text
+  numero integer
+  data_emissao timestamp
+  valor_total_do_servico double precision
+  base_de_calculo_icms double precision
+  valor_icms double
+  protocolo text
+  created_at timestamp
+  updated_at timestamp
+  chave_de_acesso text [pk]
+}
+
+Table products {
+  uid text [pk]
+  codigo text [unique]
+  descricao text
+  descricao_completa text
+  marca text
+  categoria text
+  sub_categoria text
+  ean text
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table shopping {
+  uid text [pk]
+  index integer
+  descricao text
+  codigo text
+  quantidade double precision
+  unidade text
+  valor_unitario double precision
+  reference_date timestamp
+  created_at timestamp
+  updated_at timestamp
+  chave_de_acesso text
+}
+
+Ref: market.cnpj < nfe_information.cnpj
+Ref: nfe_information.chave_de_acesso < shopping.chave_de_acesso
+Ref: products.codigo < shopping.codigo

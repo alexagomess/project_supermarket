@@ -5,7 +5,7 @@ from scripts.common.logging import Logger
 from googleapiclient.http import MediaIoBaseUpload
 import io
 from sqlalchemy import create_engine, text
-from config import DATABASE_URI
+from config import localhost_url, database_url
 from typing import List
 from hashlib import sha256
 
@@ -73,7 +73,7 @@ def save_to_postgres(df, table_name, schema="supermarket"):
     """
     Salva o dataframe no postgreSQL
     """
-    engine = create_engine(DATABASE_URI)
+    engine = create_engine(localhost_url)
     try:
         df.to_sql(table_name, engine, schema=schema, if_exists="append", index=False)
         Logger.info(f"DataFrame salvo na tabela '{table_name}' com sucesso.")

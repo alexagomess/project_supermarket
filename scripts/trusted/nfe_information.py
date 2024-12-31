@@ -1,15 +1,14 @@
 import pandas as pd
 from datetime import datetime
 from sqlalchemy import create_engine, text
-from config import FOLDER_CLEANED_NFE_INFORMATION
+from config import FOLDER_CLEANED_NFE_INFORMATION, database_url, localhost_url
 from scripts.common.logging import Logger
-from config import DATABASE_URI
 from scripts.common.etl import read_google_drive, preprocess_dates
 
 
 class TrustedNFEInformation:
     def __init__(self):
-        self.engine = create_engine(DATABASE_URI)
+        self.engine = create_engine(localhost_url)
         self.logger = Logger()
         self.folder = FOLDER_CLEANED_NFE_INFORMATION
         self.file_cleaned = "nfe_info"
@@ -117,7 +116,7 @@ class TrustedNFEInformation:
                     row["updated_at"] = pd.Timestamp(datetime.now())
                     query = text(
                         f"""
-                        INSERT INTO supermarket.{self.table_name} (nome, cnpj, inscricao_estadual, uf, destino_da_operacao, consumidor_final, 
+                        INSERT INTO {self.table_name} (nome, cnpj, inscricao_estadual, uf, destino_da_operacao, consumidor_final, 
                         presenca_do_comprador, modelo, serie, numero, data_emissao, valor_total_do_servico, base_de_calculo_icms, valor_icms, protocolo,
                         chave_de_acesso, created_at, updated_at)
                         VALUES (
