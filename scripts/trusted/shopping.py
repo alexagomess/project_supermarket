@@ -1,15 +1,14 @@
 import pandas as pd
 from datetime import datetime
 from sqlalchemy import create_engine, text
-from config import FOLDER_CLEANED_SHOPPING
+from config import FOLDER_CLEANED_SHOPPING, database_url, localhost_url
 from scripts.common.logging import Logger
-from config import DATABASE_URI
 from scripts.common.etl import create_hash, read_google_drive
 
 
 class TrustedShopping:
     def __init__(self):
-        self.engine = create_engine(DATABASE_URI)
+        self.engine = create_engine(localhost_url)
         self.logger = Logger()
         self.table_name = "shopping"
         self.folder = FOLDER_CLEANED_SHOPPING
@@ -73,7 +72,7 @@ class TrustedShopping:
                     row["updated_at"] = pd.Timestamp(datetime.now())
                     query = text(
                         f"""
-                        INSERT INTO supermarket.{self.table_name} (uid, "index", codigo, descricao, reference_date, quantidade, unidade, valor_unitario, chave_de_acesso, created_at, updated_at)
+                        INSERT INTO {self.table_name} (uid, "index", codigo, descricao, reference_date, quantidade, unidade, valor_unitario, chave_de_acesso, created_at, updated_at)
                         VALUES (
                             :uid,
                             :index,
@@ -111,11 +110,7 @@ class TrustedShopping:
                         "created_at": row["created_at"],
                         "updated_at": row["updated_at"],
                     }
-
                     result = connection.execute(query, params)
-                    self.logger.info(
-                        f"Inserção realizada para o UID: {row['uid']}, result: {result.rowcount} linhas afetadas"
-                    )
             self.logger.info(f"Registros inseridos com sucesso.")
 
 

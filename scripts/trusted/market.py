@@ -1,15 +1,14 @@
 import pandas as pd
 from datetime import datetime
 from sqlalchemy import create_engine, text
-from config import FOLDER_CLEANED_NFE_INFORMATION
+from config import FOLDER_CLEANED_NFE_INFORMATION, database_url, localhost_url
 from scripts.common.logging import Logger
-from config import DATABASE_URI
 from scripts.common.etl import read_google_drive
 
 
 class TrustedMarket:
     def __init__(self):
-        self.engine = create_engine(DATABASE_URI)
+        self.engine = create_engine(localhost_url)
         self.logger = Logger()
         self.folder = FOLDER_CLEANED_NFE_INFORMATION
         self.table_name = "market"
@@ -44,7 +43,6 @@ class TrustedMarket:
             raise e
 
     def transform(self, df: pd.DataFrame):
-
         df = df.rename(columns={"nome / razao social": "nome"})
         df = df.rename(columns={"inscricao estadual": "inscricao_estadual"})
 
@@ -94,7 +92,7 @@ class TrustedMarket:
                     row["updated_at"] = pd.Timestamp(datetime.now())
                     query = text(
                         f"""
-                        INSERT INTO supermarket.{self.table_name} (nome, cnpj, inscricao_estadual, uf, created_at, updated_at)
+                        INSERT INTO {self.table_name} (nome, cnpj, inscricao_estadual, uf, created_at, updated_at)
                         VALUES (
                             :nome,
                             :cnpj,
