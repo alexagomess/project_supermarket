@@ -1,7 +1,12 @@
 import pandas as pd
 from datetime import datetime
 from sqlalchemy import create_engine, text
-from config import FOLDER_CLEANED_NFE_INFORMATION, database_url, localhost_url
+from config import (
+    FOLDER_CLEANED_NFE_INFORMATION,
+    database_url,
+    localhost_url,
+    google_url,
+)
 from scripts.common.logging import Logger
 from scripts.common.etl import read_google_drive
 

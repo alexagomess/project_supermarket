@@ -70,7 +70,7 @@ def save_nfe_info():
     print("\n")
     Logger.info("Salvando arquivos de informações de NF-e...")
     folder_cleaned = FOLDER_CLEANED_NFE_INFORMATION
-    folder_trusted = FOLDER_TRUSTED_NFE_INFORMATION 
+    folder_trusted = FOLDER_TRUSTED_NFE_INFORMATION
 
     cleaned_files = read_google_drive(folder_cleaned)
     for cleaned_file in cleaned_files:

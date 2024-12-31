@@ -1,7 +1,7 @@
 import pandas as pd
 from datetime import datetime
 from sqlalchemy import create_engine, text
-from config import FOLDER_CLEANED_SHOPPING, database_url, localhost_url
+from config import FOLDER_CLEANED_SHOPPING, database_url, localhost_url, google_url
 from scripts.common.logging import Logger
 from scripts.common.etl import create_hash, read_google_drive
 
@@ -45,7 +45,9 @@ class TrustedShopping:
     def transform(self, df: pd.DataFrame):
         df.columns = df.columns.str.lower().str.replace(" ", "_").str.replace("-", "_")
         df["index"] = df.index
-        df = create_hash(df, ["index", "codigo", "descricao", "reference_date", "chave_de_acesso"])
+        df = create_hash(
+            df, ["index", "codigo", "descricao", "reference_date", "chave_de_acesso"]
+        )
         df["created_at"] = pd.to_datetime("now")
         df["updated_at"] = pd.to_datetime("now")
         return df
