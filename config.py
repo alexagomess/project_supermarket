@@ -19,5 +19,7 @@ db_host = os.getenv("INSTANCE_HOST")
 db_port = os.getenv("DB_PORT", "5432")
 db_name = os.getenv("DB_NAME")
 localhost_url = os.getenv("LOCALHOST_URL")
+google_host = os.getenv("GOOGLE_HOST")
 
 database_url = f"postgresql+pg8000://{db_user}:{db_pass}@{db_host}:{db_port}/{db_name}"
+google_url = f"postgresql://{db_user}:{db_pass}@{google_host}:{db_port}/{db_name}"

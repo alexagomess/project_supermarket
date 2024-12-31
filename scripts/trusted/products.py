@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from datetime import datetime
 from sqlalchemy import create_engine, text
-from config import FOLDER_CLEANED_SHOPPING, database_url, localhost_url
+from config import FOLDER_CLEANED_SHOPPING, database_url, localhost_url, google_url
 from scripts.common.logging import Logger
 from scripts.common.etl import create_hash, read_google_drive
 
@@ -31,7 +31,9 @@ class TrustedProducts:
                 file_data = read_google_drive(self.folder, file_name)
                 if file_data is not None:
                     df = pd.DataFrame(file_data)
-                    self.load_postgres(self.transform(df, self.read_categorization_products()))
+                    self.load_postgres(
+                        self.transform(df, self.read_categorization_products())
+                    )
                     self.logger.info(
                         f"Arquivo de {self.file_cleaned} salvo com sucesso."
                     )
@@ -52,15 +54,18 @@ class TrustedProducts:
         df = df.drop_duplicates()
         df = create_hash(df, ["codigo", "descricao"])
         df["descricao_completa"] = None
-        df["marca"] = None
-        # df["categoria"] = None
-        df["sub_categoria"] = None
         df["ean"] = None
         df["created_at"] = pd.to_datetime("now")
         df["updated_at"] = pd.to_datetime("now")
-        
+
         df = df.drop_duplicates()
-        result_df = df.merge(categorization[['descricao', 'tipo_produto', 'categoria']], on="descricao", how="left")
+        result_df = df.merge(
+            categorization[
+                ["descricao", "tipo_produto", "marca", "categoria", "sub_categoria"]
+            ],
+            on="descricao",
+            how="left",
+        )
 
         return result_df
 
@@ -133,9 +138,10 @@ class TrustedProducts:
         file.reset_index(drop=True, inplace=True)
         df = pd.DataFrame(file)
         df = df.replace({np.nan: None})
-        
+
         df = df.astype(str)
         return df
+
 
 if __name__ == "__main__":
     TrustedProducts().execute()
