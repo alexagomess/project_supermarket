@@ -1,51 +1,15 @@
 import pandas as pd
 from datetime import datetime
-from sqlalchemy import create_engine, text
-from config import (
-    FOLDER_CLEANED_NFE_INFORMATION,
-    database_url,
-    localhost_url,
-    google_url,
-)
-from scripts.common.logging import Logger
-from scripts.common.etl import read_google_drive
+from config import FOLDER_CLEANED_NFE_INFORMATION
+from scripts.common.etl import BaseETL
 
 
-class TrustedMarket:
+class TrustedMarket(BaseETL):
     def __init__(self):
-        self.engine = create_engine(localhost_url)
-        self.logger = Logger()
+        super().__init__()
         self.folder = FOLDER_CLEANED_NFE_INFORMATION
         self.table_name = "market"
         self.file_cleaned = "nfe_info"
-
-    def execute(self):
-        try:
-            df = read_google_drive(self.folder)
-            df = [f for f in df if f.endswith(f"-{self.file_cleaned}.csv")]
-            if not df:
-                self.logger.error(
-                    f"Nenhum arquivo {self.file_cleaned} encontrado na pasta cleaned."
-                )
-                return
-
-            for file_name in df:
-                self.logger.info(f"Lendo o arquivo: {file_name}")
-
-                file_data = read_google_drive(self.folder, file_name)
-                if file_data is not None:
-                    df = pd.DataFrame(file_data)
-                    self.load_postgres(self.transform(df))
-                    self.logger.info(
-                        f"Arquivo de {self.file_cleaned} salvo com sucesso."
-                    )
-                else:
-                    self.logger.error(
-                        f"Erro ao carregar os dados do arquivo: {file_name}"
-                    )
-        except Exception as e:
-            self.logger.error(f"Erro durante o processamento: {e}")
-            raise e
 
     def transform(self, df: pd.DataFrame):
         df = df.rename(columns={"nome / razao social": "nome"})
@@ -95,7 +59,7 @@ class TrustedMarket:
             with connection.begin():
                 for _, row in df.iterrows():
                     row["updated_at"] = pd.Timestamp(datetime.now())
-                    query = text(
+                    query = self.text(
                         f"""
                         INSERT INTO {self.table_name} (nome, cnpj, inscricao_estadual, uf, created_at, updated_at)
                         VALUES (
@@ -126,6 +90,34 @@ class TrustedMarket:
                         f"Inserção realizada para o CNPJ: {row['cnpj']}, result: {result.rowcount} linhas afetadas"
                     )
             self.logger.info(f"Registros inseridos com sucesso.")
+
+    def execute(self):
+        try:
+            df = self.read_google_drive(self.folder)
+            df = [f for f in df if f.endswith(f"-{self.file_cleaned}.csv")]
+            if not df:
+                self.logger.error(
+                    f"Nenhum arquivo {self.file_cleaned} encontrado na pasta cleaned."
+                )
+                return
+
+            for file_name in df:
+                self.logger.info(f"Lendo o arquivo: {file_name}")
+
+                file_data = self.read_google_drive(self.folder, file_name)
+                if file_data is not None:
+                    df = pd.DataFrame(file_data)
+                    self.load_postgres(self.transform(df))
+                    self.logger.info(
+                        f"Arquivo de {self.file_cleaned} salvo com sucesso."
+                    )
+                else:
+                    self.logger.error(
+                        f"Erro ao carregar os dados do arquivo: {file_name}"
+                    )
+        except Exception as e:
+            self.logger.error(f"Erro durante o processamento: {e}")
+            raise e
 
 
 if __name__ == "__main__":
