@@ -1,23 +1,20 @@
 import numpy as np
 import pandas as pd
 from datetime import datetime
-from sqlalchemy import create_engine, text
-from config import FOLDER_CLEANED_SHOPPING, database_url, localhost_url, google_url
-from scripts.common.logging import Logger
-from scripts.common.etl import create_hash, read_google_drive
+from config import FOLDER_CLEANED_SHOPPING
+from scripts.common.etl import BaseETL
 
 
-class TrustedProducts:
+class TrustedProducts(BaseETL):
     def __init__(self):
-        self.engine = create_engine(localhost_url)
-        self.logger = Logger()
+        super().__init__()
         self.folder = FOLDER_CLEANED_SHOPPING
         self.table_name = "products"
         self.file_cleaned = "shopping"
 
     def execute(self):
         try:
-            df = read_google_drive(self.folder)
+            df = self.read_google_drive(self.folder)
             df = [f for f in df if f.endswith(f"-{self.file_cleaned}.csv")]
             if not df:
                 self.logger.error(
@@ -28,7 +25,7 @@ class TrustedProducts:
             for file_name in df:
                 self.logger.info(f"Lendo o arquivo: {file_name}")
 
-                file_data = read_google_drive(self.folder, file_name)
+                file_data = self.read_google_drive(self.folder, file_name)
                 if file_data is not None:
                     df = pd.DataFrame(file_data)
                     self.load_postgres(
@@ -52,7 +49,7 @@ class TrustedProducts:
             columns=["quantidade", "unidade", "valor_unitario", "reference_date"]
         )
         df = df.drop_duplicates()
-        df = create_hash(df, ["codigo", "descricao"])
+        df = self.create_hash(df, ["codigo", "descricao"])
         df["descricao_completa"] = None
         df["ean"] = None
         df["created_at"] = pd.to_datetime("now")
@@ -89,7 +86,7 @@ class TrustedProducts:
             with connection.begin():
                 for _, row in df.iterrows():
                     row["updated_at"] = pd.Timestamp(datetime.now())
-                    query = text(
+                    query = self.text(
                         f"""
                         INSERT INTO {self.table_name} (uid, codigo, descricao, descricao_completa, marca, categoria, sub_categoria, tipo_produto, ean, created_at, updated_at)
                         VALUES (

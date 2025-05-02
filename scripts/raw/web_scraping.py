@@ -1,13 +1,13 @@
 import requests
 import pandas as pd
 from bs4 import BeautifulSoup
-from scripts.common.etl import load_google_drive
+from scripts.common.etl import BaseETL
 from config import FOLDER_RAW
-from scripts.common.logging import Logger
 
 
-class WebScraping:
+class WebScrapingRaw(BaseETL):
     def __init__(self, url):
+        super().__init__()
         self.url = url
         self.headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36"
@@ -24,14 +24,14 @@ class WebScraping:
             response = requests.get(self.url, headers=self.headers)
             response.raise_for_status()
             self.soup = BeautifulSoup(response.content, "html.parser")
-            Logger.info("Requisição realizada com sucesso.")
+            self.logger.info("Requisição realizada com sucesso.")
         except requests.exceptions.RequestException as e:
-            Logger.error(f"Erro ao realizar a requisição: {e}")
+            self.logger.error(f"Erro ao realizar a requisição: {e}")
             self.soup = None
 
     def extract_products(self):
         if self.soup is None:
-            Logger.error(
+            self.logger.error(
                 "HTML não foi carregado. Certifique-se de executar scrape_data primeiro."
             )
             return
@@ -46,12 +46,12 @@ class WebScraping:
             ]
             self.df_products = pd.DataFrame(table_data)
         else:
-            Logger.error("Tabela de produtos não encontrada.")
+            self.logger.error("Tabela de produtos não encontrada.")
             self.df_products = pd.DataFrame()
 
     def extract_nfe_info(self):
         if self.soup is None:
-            Logger.error(
+            self.logger.error(
                 "HTML não foi carregado. Certifique-se de executar scrape_data primeiro."
             )
             return
@@ -69,12 +69,12 @@ class WebScraping:
                 list(data_dict.items()), columns=["Título", "Valor"]
             )
         else:
-            Logger.error("Div com id='collapse4' não encontrada.")
+            self.logger.error("Div com id='collapse4' não encontrada.")
             self.df_info_nfe = pd.DataFrame()
 
     def extract_key_access(self):
         if self.soup is None:
-            Logger.error(
+            self.logger.error(
                 "HTML não foi carregado. Certifique-se de executar scrape_data primeiro."
             )
             return
@@ -90,7 +90,7 @@ class WebScraping:
                 list(data_dict.items()), columns=["Título", "Valor"]
             )
         else:
-            Logger.error("Div com id='collapseTwo' não encontrada.")
+            self.logger.error("Div com id='collapseTwo' não encontrada.")
             self.df_key_access = pd.DataFrame()
 
     def union_extracted_data(self):
@@ -109,8 +109,10 @@ class WebScraping:
     def load(self):
         if not self.df_combined.empty:
             file_name = f"{self.formatted_date}-shopping.csv"
-            load_google_drive(self.df_combined, file_name, FOLDER_RAW)
-            Logger.info(f"Dados combinados salvos no Google Drive como '{file_name}'.")
+            self.load_google_drive(self.df_combined, file_name, FOLDER_RAW)
+            self.logger.info(
+                f"Dados combinados salvos no Google Drive como '{file_name}'."
+            )
 
     def execute(self):
         self.scrape_data()
@@ -128,5 +130,5 @@ if __name__ == "__main__":
         print("Código inválido! Certifique-se de digitar 44 números.")
     else:
         url = f"https://portalsped.fazenda.mg.gov.br/portalnfce/sistema/qrcode.xhtml?p={nfe_key}%7C2%7C1%7C1%7C8B75E1F34CEEB8DE8D620838EBB3E1E845379697"
-        scraper = WebScraping(url)
+        scraper = WebScrapingRaw(url)
         scraper.execute()
