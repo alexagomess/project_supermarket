@@ -3,6 +3,17 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Airflow sensitive files
+config/airflow.cfg
+*.cfg
+logs/
+output/
+
+# Environment variables
+.env
+.env.local
+.env.production
+
 # C extensions
 *.so
 
