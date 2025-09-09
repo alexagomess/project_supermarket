@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 from datetime import datetime
-from config import FOLDER_CLEANED_SHOPPING
+from scripts.common.config import FOLDER_CLEANED_SHOPPING
 from scripts.common.etl import BaseETL
 
 

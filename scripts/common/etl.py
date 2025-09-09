@@ -4,7 +4,7 @@ from io import BytesIO
 from sqlalchemy import create_engine, text
 from hashlib import sha256
 from googleapiclient.http import MediaIoBaseUpload
-from config import localhost_url, database_url
+from scripts.common.config import localhost_url, database_url
 from typing import List
 from scripts.docs.oath_gdrive import authenticate
 from scripts.common.logging import Logger
@@ -12,7 +12,6 @@ from scripts.common.logging import Logger
 
 class BaseETL:
     def __init__(self):
-        self.engine = create_engine(localhost_url)
         self.text = text
         self.logger = Logger()
 
@@ -79,6 +78,9 @@ class BaseETL:
         """
         Salva o dataframe no postgreSQL
         """
+        if localhost_url is None:
+            self.logger.error("localhost_url está None. Verifique a configuração.")
+            raise ValueError("localhost_url não pode ser None.")
         engine = create_engine(localhost_url)
         try:
             df.to_sql(

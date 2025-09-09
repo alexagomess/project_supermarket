@@ -1,7 +1,7 @@
 import pandas as pd
 from datetime import datetime
 from scripts.common.etl import BaseETL
-from config import (
+from scripts.common.config import (
     FOLDER_CLEANED_SHOPPING,
     FOLDER_TRUSTED_SHOPPING,
     FOLDER_CLEANED_SHOPPING,

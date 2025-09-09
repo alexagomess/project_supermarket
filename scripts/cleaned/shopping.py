@@ -1,7 +1,7 @@
 import pandas as pd
 from datetime import datetime
 from scripts.common.etl import BaseETL
-from config import FOLDER_RAW, FOLDER_CLEANED_SHOPPING
+from scripts.common.config import FOLDER_RAW, FOLDER_CLEANED_SHOPPING
 
 
 class ShoppingCleaned(BaseETL):

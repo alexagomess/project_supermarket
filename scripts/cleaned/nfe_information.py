@@ -1,7 +1,7 @@
 import pandas as pd
 import unidecode
 from scripts.common.etl import BaseETL
-from config import FOLDER_RAW, FOLDER_CLEANED_NFE_INFORMATION
+from scripts.common.config import FOLDER_RAW, FOLDER_CLEANED_NFE_INFORMATION
 
 
 class NFEInformationCleaned(BaseETL):
