@@ -111,7 +111,7 @@ pluggy==1.5.0
 prison==0.2.1
 propcache==0.2.0
 proto-plus==1.24.0
-protobuf==5.28.2
+protobuf==5.29.5
 psutil==6.1.0
 psycopg2==2.9.10
 pyasn1==0.6.1
