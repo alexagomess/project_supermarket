@@ -1,233 +1,185 @@
-##### Portuguese after english
-# Supermarket Data Automation Project
-
-This project was developed to meet a personal need of mine and my wife when we go to the supermarket: to know if we have already bought a certain product before, if it was cheaper and in which market.
-
-#### The project so far
-The project flow begins with the processing of the invoices of the purchases made. This data is organized and transformed into three distinct layers: raw, cleaned and trusted. The raw layer stores the original data, the cleaned layer contains processed and cleaned data, while the trusted layer is intended for data that can be trusted and used for analysis and reports.
-
-#### Next Steps
-The next steps of the project include the implementation of Apache Airflow to orchestrate the updating of data between layers, ensuring that the information is always up to date. A connection to a PostgreSQL database is also planned to allow queries and analysis of the data through SQL. Finally, I intend to integrate a data visualization tool, such as Looker Studio or Power BI, to present insights in an intuitive and accessible way.
-
-## Project Structure
-
-```
-project_supermarket/
-├── scripts/
-│ ├── cleaned/
-│ │ ├── __init__.py
-│ │ ├── products.py
-│ │ ├── shopping.py
-│ │ └── nfe_info.py
-│ ├── docs/
-│ │ ├── __init__.py
-│ │ ├── authentication.py
-│ │ ├── gdrive_read.py
-│ │ ├── gdrive_write.py
-│ │ └── write_dataframe.py
-│ ├── raw/
-│ │ ├── __init__.py
-│ │ ├── web_scrapping_products.py
-│ │ └── web_scrapping_table_nfe.py
-│ ├── trusted/
-│ │ ├── __init__.py
-│ │ ├── market.py
-│ │ ├── nfe_information.py
-│ │ ├── products.py
-│ │ ├── shopping.py
-├── .env
-├── requirements.txt
-├── config.py
-```
-
-## Prerequisites
-
-Make sure you have the following installed:
-
-- Python 3.x
-- pip
-
-### Dependencies
-
-To install the project dependencies, run:
-
-```bash
-pip install -r requirements.txt
-```
-
-#### Google Drive Setup
-To authenticate your project with Google Drive and allow it to read and write files, follow the steps below:
-
-#### 1. Create a Project on Google Cloud
-Access the Google Cloud Console.
-Create a new project.
-Enable the Google Drive API for your project.
-
-#### 2. Create Credentials
-Go to the "Credentials" section in the left-hand menu.
-Click "Create Credentials" and choose "OAuth Client ID".
-Select "Desktop Application" as the application type.
-Click "Create" and download the client_secrets.json file.
-
-#### 3. Authenticate and Generate Token
-##### 1. Place the client_secrets.json file in the root of your project.
-##### 2. Run the following script to generate the token.json file, which will be used for future authentications:
-```bash
-from scripts.docs.authentication import authenticate_gdrive
-authenticate_gdrive() # This script will perform the authentication and generate the token.json
-```
-
-#### 4. .env configuration
-Create a .env file in the root of your project with the following variables:
-
-```bash
-FOLDER_RAW=Folder ID
-FOLDER_CLEANED=Folder ID
-FOLDER_CLEANED_SHOPPING=Folder ID
-FOLDER_CLEANED_NFE_INFORMATION=Folder ID
-FOLDER_TRUSTED=Folder ID
-FOLDER_TRUSTED_SHOPPING=Folder ID
-FOLDER_TRUSTED_NFE_INFORMATION=Folder ID
-FOLDER_TRUSTED_PRODUCTS=Folder ID
-FOLDER_TRUSTED_MARKET=Folder ID
-DATABASE_URI=URL do banco de dados
-```
-
-### Running the Project
-After configuring the credentials and the environment, you can run the main scripts to process the data:
-
-To process the purchase data (shopping):
-```bash
-python cleaned/shopping.py
-```
-To process the invoice data (nfe_info):
-```bash
-python cleaned/nfe_info.py
-```
-
-### Notes
-Make sure that the libraries mentioned in the requirements.txt are installed correctly.
-
-The code is structured in three layers: raw, cleaned and trusted, allowing an organized and clear data flow.
-
-### Acknowledgements
-First of all, I would like to thank God for allowing and enabling me to develop this personal project. I would also like to thank my wife for supporting me and encouraging me to continue working on this, even on the most tiring days.
-
-
-
-#
-##### Em português
 # Projeto de Automação de Dados de Supermercado
 
-Este projeto foi desenvolvido para atender a uma necessidade pessoal minha e da minha esposa ao frequentarmos o mercado: saber se já compramos um determinado produto antes, se ele estava mais barato e em qual mercado.
+Projeto pessoal para responder, a partir das notas fiscais das compras: **já comprei este produto antes? estava mais barato? em qual mercado?**
 
-#### O projeto até agora
-O fluxo do projeto inicia-se com o processamento das notas fiscais das compras realizadas. Esses dados são organizados e transformados em três camadas distintas: raw, cleaned e trusted. A camada raw armazena os dados originais, a camada cleaned contém dados processados e limpos, enquanto a camada trusted é destinada a dados que podem ser confiáveis e utilizados para análises e relatórios.
+O fluxo processa as NF-e em três camadas (arquitetura *medallion*):
 
-#### Próximos Passos
-Os próximos passos do projeto incluem a implementação do Apache Airflow para orquestrar a atualização dos dados entre as camadas, garantindo que as informações estejam sempre atualizadas. Também está planejada uma conexão com um banco de dados PostgreSQL para permitir consultas e análises dos dados por meio de SQL. Finalmente, pretendo integrar uma ferramenta de visualização de dados, como Looker Studio ou Power BI, para apresentar insights de forma intuitiva e acessível.
+- **raw** — dados originais extraídos por web scraping do portal da NF-e.
+- **cleaned** — dados limpos e padronizados.
+- **trusted** — dados confiáveis, prontos para análise, gravados no PostgreSQL.
 
-## Estrutura do Projeto
+A orquestração é feita com **Apache Airflow** (via Docker Compose) e os arquivos intermediários ficam no **Google Drive**.
+
+## Estrutura do projeto
 
 ```
 project_supermarket/
-├── scripts/
-│ ├── cleaned/
-│ │ ├── __init__.py
-│ │ ├── products.py
-│ │ ├── shopping.py
-│ │ └── nfe_info.py
-│ ├── docs/
-│ │ ├── __init__.py
-│ │ ├── authentication.py
-│ │ ├── gdrive_read.py
-│ │ ├── gdrive_write.py
-│ │ └── write_dataframe.py
-│ ├── raw/
-│ │ ├── __init__.py
-│ │ ├── web_scrapping_products.py
-│ │ └── web_scrapping_table_nfe.py
-│ ├── trusted/
-│ │ ├── __init__.py
-│ │ ├── market.py
-│ │ ├── nfe_information.py
-│ │ ├── products.py
-│ │ ├── shopping.py
-├── .env
+├── dags/                        # DAGs do Airflow
+├── config/                      # airflow.cfg
+├── diagram/                     # modelo de dados (dbdiagram)
+├── docker-compose.yaml          # Airflow + PostgreSQL + Redis
 ├── requirements.txt
-├── config.py
+└── scripts/
+    ├── common/
+    │   ├── config.py            # variáveis de ambiente / conexões
+    │   ├── etl.py               # BaseETL (Drive, PostgreSQL, hashes, upsert, pipeline trusted)
+    │   └── logging.py           # Logger
+    ├── docs/
+    │   └── oath_gdrive.py       # autenticação Google Drive
+    ├── raw/
+    │   ├── web_scraping.py      # extração da NF-e
+    │   └── de_para_produtos.xlsx
+    ├── cleaned/
+    │   ├── shopping.py          # limpeza dos itens comprados
+    │   └── nfe_information.py    # limpeza dos dados da nota
+    └── trusted/
+        ├── shopping.py
+        ├── products.py
+        ├── market.py
+        ├── nfe_information.py
+        ├── supermarket.py       # persistência dos CSVs trusted no Drive
+        ├── indicators/          # consultas SQL de indicadores
+        └── schemas/
 ```
 
+## Modelo de dados
+
+Quatro tabelas relacionadas por `cnpj`, `chave_de_acesso` e `codigo`:
+
+- `market` (mercados) — PK `cnpj`
+- `nfe_information` (dados da nota) — PK `chave_de_acesso`
+- `products` (produtos) — PK `uid`
+- `shopping` (itens comprados) — PK `uid`
+
+Detalhes em [diagram/diagram.txt](diagram/diagram.txt).
 
 ## Pré-requisitos
 
-Certifique-se de ter o seguinte instalado:
+- Python 3.x e pip
+- Docker e Docker Compose (para o Airflow)
 
-- Python 3.x
-- pip
-
-### Dependências
-
-Para instalar as dependências do projeto, execute:
+## Instalação
 
 ```bash
 pip install -r requirements.txt
 ```
 
-#### Configuração do Google Drive
-Para autenticar seu projeto com o Google Drive e permitir que ele leia e escreva arquivos, siga os passos abaixo:
+## Configuração do Google Drive
 
-#### 1. Criar um Projeto no Google Cloud
-Acesse o Google Cloud Console.
-Crie um novo projeto.
-Ative a Google Drive API para seu projeto.
+1. No [Google Cloud Console](https://console.cloud.google.com/), crie um projeto e ative a **Google Drive API**.
+2. Em **Credenciais**, crie um **ID do cliente OAuth** do tipo **Aplicativo para computador** e baixe o `client_secrets.json` para a raiz do projeto.
+3. Gere o `token.json` autenticando uma vez:
 
-#### 2. Criar Credenciais
-Vá até a seção "Credenciais" no menu do lado esquerdo.
-Clique em "Criar credenciais" e escolha "ID do cliente OAuth".
-Selecione "Aplicativo de desktop" como o tipo de aplicativo.
-Clique em "Criar" e baixe o arquivo client_secrets.json.
+   ```python
+   from scripts.docs.oath_gdrive import authenticate
+   authenticate()  # abre o fluxo OAuth e gera o token.json
+   ```
 
-#### 3. Autenticar e Gerar o Token
-##### 1. Coloque o arquivo client_secrets.json na raiz do seu projeto.
-##### 2. Execute o seguinte script para gerar o arquivo token.json, que será usado para autenticações futuras:
-```bash
-from scripts.docs.autentication import authenticate_gdrive
-authenticate_gdrive()  # Este script fará a autenticação e gerará o token.json
-```
+## Configuração do `.env`
 
-#### 4. Configuração do .env
-Crie um arquivo .env na raiz do seu projeto com as seguintes variáveis:
+Crie um arquivo `.env` na raiz com:
 
 ```bash
-FOLDER_RAW=ID da folder
-FOLDER_CLEANED=ID da folder
-FOLDER_CLEANED_SHOPPING=Folder ID
-FOLDER_CLEANED_NFE_INFORMATION=Folder ID
-FOLDER_TRUSTED=ID da folder
-FOLDER_TRUSTED_SHOPPING=ID da folder
-FOLDER_TRUSTED_NFE_INFORMATION=ID da folder
-FOLDER_TRUSTED_PRODUCTS=ID da folder
-FOLDER_TRUSTED_MARKET=ID da folder
+# Pastas do Google Drive (IDs)
+FOLDER_RAW=
+FOLDER_CLEANED=
+FOLDER_CLEANED_SHOPPING=
+FOLDER_CLEANED_NFE_INFORMATION=
+FOLDER_TRUSTED=
+FOLDER_TRUSTED_SHOPPING=
+FOLDER_TRUSTED_NFE_INFORMATION=
+FOLDER_TRUSTED_PRODUCTS=
+FOLDER_TRUSTED_MARKET=
+
+# PostgreSQL local da aplicação (serviço postgres-app do docker-compose)
+DB_HOST=postgres-app
+DB_PORT=5432
+DB_USER=postgres
+DB_PASS=postgres
+DB_NAME=supermarket
 ```
 
+> O PostgreSQL da aplicação roda como o serviço `postgres-app` no Docker e é
+> inicializado automaticamente com o schema de [diagram/diagram.sql](diagram/diagram.sql).
+> A porta `5432` é exposta no host para acesso via `psql`/DBeaver.
+> Para rodar os scripts direto no host (fora do Docker), use `DB_HOST=localhost`.
 
-### Execução do Projeto
-Após configurar as credenciais e o ambiente, você pode executar os scripts principais para processar os dados:
+## Executando o pipeline
 
-Para processar os dados de compras (shopping):
+Cada camada pode ser executada individualmente:
+
 ```bash
-python cleaned/shopping.py
+# raw — extrai a NF-e (informe a chave de acesso de 44 dígitos)
+python scripts/raw/web_scraping.py
+
+# cleaned
+python scripts/cleaned/shopping.py
+python scripts/cleaned/nfe_information.py
+
+# trusted (grava no PostgreSQL)
+python scripts/trusted/shopping.py
+python scripts/trusted/products.py
+python scripts/trusted/market.py
+python scripts/trusted/nfe_information.py
 ```
-Para processar os dados de notas fiscais (nfe_info):
+
+### Airflow (orquestração)
+
+O runtime roda em containers Docker. As dependências dos scripts são instaladas
+numa imagem customizada ([Dockerfile](Dockerfile) + [requirements-docker.txt](requirements-docker.txt)).
+O `.env`, o `token.json` e o `client_secrets.json` da raiz são montados nos containers.
+
 ```bash
-python cleaned/nfe_info.py
+make build   # constrói a imagem customizada do Airflow
+make up      # sobe Airflow + PostgreSQL + Redis
+make logs    # acompanha os logs
+make down    # derruba os serviços
 ```
 
-### Observações
-Certifique-se de que as bibliotecas mencionadas no requirements.txt estejam instaladas corretamente.
-O código está estruturado em três camadas: raw, cleaned e trusted, permitindo um fluxo de dados organizado e claro.
+A interface fica disponível em `http://localhost:8081` (usuário/senha padrão: `airflow`/`airflow`).
 
+#### DAG `supermarket`
 
-### Agradecimentos
-Agradeço primeiramente a Deus por me permitir e me capacitar desenvolver esse projeto pessoal. Também agradeço a minha esposa por me apoiar e me incentivar em continuar trabalhando nisso, mesmo nos dias mais cansativos. 
+Orquestra as três camadas. É **acionada manualmente** e recebe um único parâmetro,
+`nfe_key` (chave de acesso da NF-e de 44 dígitos):
+
+```
+raw.web_scraping
+  ├─ cleaned.nfe_information ─┬─ trusted.market
+  │                          ├─ trusted.nfe_information
+  │                          └─ trusted.supermarket
+  └─ cleaned.shopping ───────┬─ trusted.products
+                             ├─ trusted.shopping
+                             └─ trusted.supermarket
+```
+
+## BI (Metabase)
+
+O [Metabase](https://www.metabase.com/) sobe junto com o Docker e conecta ao
+PostgreSQL da aplicação pela rede interna do compose (não precisa expor o banco).
+
+```bash
+docker compose up -d metabase
+```
+
+Acesse `http://localhost:3000`, crie a conta de admin e adicione a conexão:
+
+| Campo | Valor |
+|---|---|
+| Tipo | PostgreSQL |
+| Host | `postgres-app` |
+| Porta | `5432` |
+| Database | `supermarket` |
+| Usuário / Senha | `postgres` / `postgres` |
+
+Views analíticas prontas ([diagram/views.sql](diagram/views.sql)) para os dashboards:
+
+- `vw_compras` — base achatada (item a item) com produto, mercado, data e valores.
+- `vw_gasto_por_categoria` — gasto e quantidade por categoria / tipo de produto.
+- `vw_preco_por_mercado` — preço mín/médio/máx do produto por mercado.
+- `vw_recorrencia` — frequência de compra por produto (recorrência).
+- `vw_gasto_mensal` — gasto por mês e por mercado (comportamento no tempo).
+
+## Agradecimentos
+
+Agradeço a Deus pela oportunidade de desenvolver este projeto e à minha esposa pelo apoio e incentivo.
