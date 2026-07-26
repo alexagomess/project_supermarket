@@ -175,7 +175,15 @@ cython_debug/
 
 #My Apps
 token.json
+token.json.lock
 client_secrets.json
+service_account.json
+
+# Delta lake / dados locais
+data/
+
+# macOS
+.DS_Store
 
 # vs code
 .vscode/

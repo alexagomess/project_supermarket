@@ -1,8 +1,10 @@
+import re
 import requests
 import pandas as pd
+from urllib.parse import urlparse, parse_qs, unquote
 from bs4 import BeautifulSoup
 from scripts.common.etl import BaseETL
-from config import FOLDER_RAW
+from scripts.common.config import FOLDER_RAW
 
 
 class WebScrapingRaw(BaseETL):
@@ -18,6 +20,15 @@ class WebScrapingRaw(BaseETL):
         self.df_key_access = pd.DataFrame()
         self.df_combined = pd.DataFrame()
         self.formatted_date = None
+
+    def execute(self):
+        self.scrape_data()
+        if self.soup:
+            self.extract_products()
+            self.extract_nfe_info()
+            self.extract_key_access()
+            self.union_extracted_data()
+            self.load()
 
     def scrape_data(self):
         try:
@@ -114,21 +125,48 @@ class WebScrapingRaw(BaseETL):
                 f"Dados combinados salvos no Google Drive como '{file_name}'."
             )
 
-    def execute(self):
-        self.scrape_data()
-        if self.soup:
-            self.extract_products()
-            self.extract_nfe_info()
-            self.extract_key_access()
-            self.union_extracted_data()
-            self.load()
+
+FALLBACK_SIGNATURE = "7AC05039150FDAF2129910938C763BE83592D4F6"
+
+
+def extract_nfe_key(value: str) -> str:
+    """Extrai a chave de 44 dígitos a partir de uma URL completa da NF-e ou da própria chave."""
+    value = str(value).strip()
+    if value.lower().startswith("http"):
+        p = parse_qs(urlparse(value).query).get("p", [""])[0]
+        value = unquote(p).split("|")[0]
+    key = re.sub(r"\D", "", value)
+    if len(key) != 44:
+        raise ValueError(
+            "Não foi possível extrair uma chave válida de 44 dígitos da entrada informada."
+        )
+    return key
+
+
+def build_url(value: str) -> str:
+    """Retorna a URL para o GET.
+
+    Se `value` já for uma URL completa, ela é usada como está (preservando a
+    assinatura da nota). Caso contrário, monta a URL a partir da chave usando a
+    assinatura de fallback.
+    """
+    value = str(value).strip()
+    if value.lower().startswith("http"):
+        return value
+    key = extract_nfe_key(value)
+    return (
+        "https://portalsped.fazenda.mg.gov.br/portalnfce/sistema/qrcode.xhtml"
+        f"?p={key}%7C2%7C1%7C1%7C{FALLBACK_SIGNATURE}"
+    )
+
+
+def run(nfe_input: str):
+    key = extract_nfe_key(nfe_input)
+    url = build_url(nfe_input)
+    scraper = WebScrapingRaw(url)
+    scraper.logger.info(f"Iniciando scraping da NF-e (chave: {key}).")
+    scraper.execute()
 
 
 if __name__ == "__main__":
-    nfe_key = input("Digite o código da NFe de 44 números: ")
-    if len(nfe_key) != 44:
-        print("Código inválido! Certifique-se de digitar 44 números.")
-    else:
-        url = f"https://portalsped.fazenda.mg.gov.br/portalnfce/sistema/qrcode.xhtml?p={nfe_key}%7C2%7C1%7C1%7C8B75E1F34CEEB8DE8D620838EBB3E1E845379697"
-        scraper = WebScrapingRaw(url)
-        scraper.execute()
+    run(input("Cole a URL da NF-e ou a chave de 44 dígitos: "))

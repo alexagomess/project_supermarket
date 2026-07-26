@@ -1,116 +1,72 @@
-import pandas as pd
+import polars as pl
 from datetime import datetime
-from scripts.common.config import FOLDER_CLEANED_SHOPPING
+from hashlib import sha256
 from scripts.common.etl import BaseETL
+
+
+def _sha256(value: str) -> str:
+    return sha256(value.encode("utf-8")).hexdigest()
 
 
 class TrustedShopping(BaseETL):
     def __init__(self):
         super().__init__()
-        self.table_name = "shopping"
-        self.folder = FOLDER_CLEANED_SHOPPING
-        self.file_cleaned = "shopping"
+        self.source = self.delta_path("cleaned", "shopping")
+        self.target = self.delta_path("trusted", "shopping")
+        self.watermark = "trusted_shopping"
+        self.keys = ["uid"]
+
+    def transform(self, df: pl.DataFrame) -> pl.DataFrame:
+        now = datetime.now()
+        return (
+            df.with_columns(
+                [
+                    pl.concat_str(
+                        [
+                            pl.col("item_index").cast(pl.Utf8),
+                            pl.col("codigo"),
+                            pl.col("descricao"),
+                            pl.col("reference_date").cast(pl.Utf8),
+                            pl.col("chave_de_acesso"),
+                        ],
+                        separator="_",
+                    )
+                    .map_elements(_sha256, return_dtype=pl.Utf8)
+                    .alias("uid"),
+                    pl.concat_str(
+                        [pl.col("codigo"), pl.col("descricao")], separator="_"
+                    )
+                    .map_elements(_sha256, return_dtype=pl.Utf8)
+                    .alias("product_uid"),
+                ]
+            )
+            .with_columns(
+                [pl.lit(now).alias("created_at"), pl.lit(now).alias("updated_at")]
+            )
+            .select(
+                [
+                    "uid",
+                    "item_index",
+                    "product_uid",
+                    "descricao",
+                    "codigo",
+                    "quantidade",
+                    "unidade",
+                    "valor_unitario",
+                    "reference_date",
+                    "chave_de_acesso",
+                    "created_at",
+                    "updated_at",
+                ]
+            )
+        )
 
     def execute(self):
         try:
-            df = self.read_google_drive(self.folder)
-            df = [f for f in df if f.endswith(f"-{self.file_cleaned}.csv")]
-            if not df:
-                self.logger.error(
-                    f"Nenhum arquivo {self.file_cleaned} encontrado na pasta cleaned."
-                )
-                return
-
-            for file_name in df:
-                self.logger.info(f"Lendo o arquivo: {file_name}")
-
-                file_data = self.read_google_drive(self.folder, file_name)
-                if file_data is not None:
-                    df = pd.DataFrame(file_data)
-                    self.load_postgres(self.transform(df))
-                    self.logger.info(
-                        f"Arquivo de {self.file_cleaned} salvo com sucesso."
-                    )
-                else:
-                    self.logger.error(
-                        f"Erro ao carregar os dados do arquivo: {file_name}"
-                    )
+            self.run_delta_trusted()
         except Exception as e:
             self.logger.error(f"Erro durante o processamento: {e}")
             raise e
-
-    def transform(self, df: pd.DataFrame):
-        df.columns = df.columns.str.lower().str.replace(" ", "_").str.replace("-", "_")
-        df["index"] = df.index
-        df = self.create_hash(
-            df, ["index", "codigo", "descricao", "reference_date", "chave_de_acesso"]
-        )
-        df["created_at"] = pd.to_datetime("now")
-        df["updated_at"] = pd.to_datetime("now")
-        return df
-
-    def load_postgres(self, df: pd.DataFrame):
-        """
-        Salva os dados no PostgreSQL usando MERGE/UPSERT para evitar duplicados.
-
-        Args:
-            df (pd.DataFrame): O DataFrame que contém os dados a serem salvos.
-
-        Returns:
-            None
-        """
-        if df["uid"].duplicated().any():
-            self.logger.info("Existem duplicados no DataFrame!")
-            duplicates = df[df["uid"].duplicated(keep=False)]
-            self.logger.info(duplicates)
-        else:
-            self.logger.info("Nenhuma duplicidade no DataFrame.")
-        with self.engine.connect() as connection:
-            with connection.begin():
-                for _, row in df.iterrows():
-                    row["updated_at"] = pd.Timestamp(datetime.now())
-                    query = self.text(
-                        f"""
-                        INSERT INTO {self.table_name} (uid, "index", codigo, descricao, reference_date, quantidade, unidade, valor_unitario, chave_de_acesso, created_at, updated_at)
-                        VALUES (
-                            :uid,
-                            :index,
-                            :codigo,
-                            :descricao,
-                            :reference_date,
-                            :quantidade,
-                            :unidade,
-                            :valor_unitario,
-                            :chave_de_acesso,
-                            :created_at,
-                            :updated_at
-                        )
-                        ON CONFLICT (uid)
-                        DO UPDATE SET
-                            descricao = EXCLUDED.descricao,
-                            reference_date = EXCLUDED.reference_date,
-                            quantidade = EXCLUDED.quantidade,
-                            unidade = EXCLUDED.unidade,
-                            valor_unitario = EXCLUDED.valor_unitario,
-                            updated_at = EXCLUDED.updated_at;
-                    """
-                    )
-
-                    params = {
-                        "uid": row["uid"],
-                        "index": row["index"],
-                        "codigo": row["codigo"],
-                        "descricao": row["descricao"],
-                        "reference_date": row["reference_date"],
-                        "quantidade": row["quantidade"],
-                        "unidade": row["unidade"],
-                        "valor_unitario": row["valor_unitario"],
-                        "chave_de_acesso": row["chave_de_acesso"],
-                        "created_at": row["created_at"],
-                        "updated_at": row["updated_at"],
-                    }
-                    result = connection.execute(query, params)
-            self.logger.info(f"Registros inseridos com sucesso.")
 
 
 if __name__ == "__main__":
